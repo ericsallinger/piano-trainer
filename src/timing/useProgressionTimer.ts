@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface ProgressionTimerOptions {
   cursor: number
@@ -33,12 +33,12 @@ export function useProgressionTimer({ cursor, totalChords, enabled }: Progressio
     }
   }, [cursor, totalChords, enabled])
 
-  function reset() {
+  const reset = useCallback(() => {
     startMsRef.current = null
     endMsRef.current = null
     setStartMs(null)
     setEndMs(null)
-  }
+  }, [])
 
   return { startMs, endMs, reset }
 }

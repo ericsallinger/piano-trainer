@@ -87,14 +87,11 @@ describe('useProgressionTimer', () => {
     act(() => result.current.reset())
     expect(result.current.startMs).toBeNull()
     expect(result.current.endMs).toBeNull()
+    // App also resets cursor to 0 when reset() is called
+    rerender({ cursor: 0, totalChords: 3, enabled: true })
     vi.setSystemTime(2000)
     rerender({ cursor: 1, totalChords: 3, enabled: true })
-    // After reset, cursor=1 with startMs=null triggers fresh start
-    // Need one more rerender to trigger the effect after reset cleared the ref
-    rerender({ cursor: 0, totalChords: 3, enabled: true })
-    vi.setSystemTime(3000)
-    rerender({ cursor: 1, totalChords: 3, enabled: true })
-    expect(result.current.startMs).toBe(3000)
+    expect(result.current.startMs).toBe(2000)
   })
 
   it('handles single-chord progression: sets both on cursor 0->1', () => {
