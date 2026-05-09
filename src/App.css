@@ -12,3 +12,51 @@ body {
   margin: 0 auto;
   padding: 24px 16px;
 }
+
+.progression {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: 'Georgia', serif;
+  font-size: 24px;
+  line-height: 1.6;
+  margin: 24px 0;
+}
+
+.chord {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  transition: opacity 0.2s ease;
+}
+
+.chord--upcoming {
+  color: var(--text-color, #222);
+}
+
+.chord--current {
+  border-color: currentColor;
+  font-weight: 600;
+}
+
+.chord--completed {
+  opacity: 0.4;
+}
+
+.chord--flash-green {
+  animation: flash-green 500ms ease-out;
+}
+
+.chord--flash-red {
+  animation: flash-red 500ms ease-out;
+}
+
+@keyframes flash-green {
+  0%   { background-color: rgba(40, 200, 80, 0.7); }
+  100% { background-color: transparent; }
+}
+
+@keyframes flash-red {
+  0%   { background-color: rgba(220, 60, 60, 0.7); }
+  100% { background-color: transparent; }
+}
