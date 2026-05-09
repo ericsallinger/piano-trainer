@@ -174,7 +174,7 @@ export default function App() {
               progression={progression}
               cursor={cursor}
               flash={flash}
-              onChordClick={(i) => { setCursor(i); setFlash(null); settle.cancel() }}
+              onChordClick={(i) => { setCursor(i); setFlash(null); settle.cancel(); timer.reset() }}
             />
             {isComplete && <p className="done-indicator">Done!</p>}
             {timerResult && <p className="timer-result">{timerResult}</p>}
