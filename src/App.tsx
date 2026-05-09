@@ -9,41 +9,47 @@ import { LoadPanel } from './ui/LoadPanel'
 import { LibraryPanel } from './ui/LibraryPanel'
 import { ProgressionDisplay, type FlashEvent } from './ui/ProgressionDisplay'
 import { ControlsStrip } from './ui/ControlsStrip'
+import { useSettings } from './settings/useSettings'
+import { useProgressionTimer } from './timing/useProgressionTimer'
+import { computeExpectedMs } from './timing/expected'
+import { formatDuration, formatDelta } from './timing/format'
 
 const FLASH_DURATION_MS = 500
 const SETTLE_WINDOW_MS = 50
 
-const CLAUDE_PROMPT = `Generate a piano chord progression as JSON for my practice app.
-
-Parameters:
-- Key: <e.g. C major>
-- Length: <e.g. 8 chords>
-- Style/notes: <e.g. "jazz ii-V-Is, lots of first-inversion 7th chords">
-
-Output a single JSON object with this exact schema (no prose, no markdown
-fences, just the JSON):
-
-{
-  "name": "<short descriptive name>",
-  "chords": [
-    { "symbol": "<chord symbol>", "pitchClasses": [<ints 0-11>], "bass": <int 0-11> }
-  ]
-}
-
-Conventions:
-- pitchClasses uses C=0, C#=1, D=2, ..., B=11. Order within the array doesn't matter.
-- bass MUST be one of the values in pitchClasses, and represents the lowest
-  pitch class (used to encode inversion).
-- For root position chords, bass equals the root's pitch class.
-- For inversions, write the symbol with slash notation, e.g. "Cmaj7/E", and set
-  bass accordingly.
-- Make sure pitchClasses accurately matches the symbol — if you write "Cmaj7"
-  the array must contain {0, 4, 7, 11}.
-
-Example:
-{ "symbol": "G7/B", "pitchClasses": [7, 11, 2, 5], "bass": 11 }
-
-Now generate the progression for the parameters above.`
+const CLAUDE_PROMPT = [
+  'Generate a piano chord progression as JSON for my practice app.',
+  ' ',
+  'Parameters:',
+  '- Style/notes: ',
+  '- Length: ',
+  '- Key: ',
+  '-------------------',
+  'Output a single JSON object with this exact schema (no prose, no markdown',
+  'fences, just the JSON):',
+  ' ',
+  '{',
+  '  "name": "<short descriptive name>",',
+  '  "chords": [',
+  '    { "symbol": "<chord symbol>", "pitchClasses": [<ints 0-11>], "bass": <int 0-11> }',
+  '  ]',
+  '}',
+  ' ',
+  'Conventions:',
+  "- pitchClasses uses C=0, C#=1, D=2, ..., B=11. Order within the array doesn't matter.",
+  '- bass MUST be one of the values in pitchClasses, and represents the lowest',
+  '  pitch class (used to encode inversion).',
+  "- For root position chords, bass equals the root's pitch class.",
+  '- For inversions, write the symbol with slash notation, e.g. "Cmaj7/E", and set',
+  '  bass accordingly.',
+  '- Make sure pitchClasses accurately matches the symbol — if you write "Cmaj7"',
+  '  the array must contain {0, 4, 7, 11}.',
+  ' ',
+  'Example:',
+  '{ "symbol": "G7/B", "pitchClasses": [7, 11, 2, 5], "bass": 11 }',
+  ' ',
+  'Now generate the progression for the parameters above.',
+].join('\n')
 
 export default function App() {
   const midi = useMidiInput()
@@ -51,7 +57,14 @@ export default function App() {
   const [cursor, setCursor] = useState(0)
   const [flash, setFlash] = useState<FlashEvent | null>(null)
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [openPanel, setOpenPanel] = useState<'load' | 'library' | 'prompt' | null>(null)
+  const [openPanel, setOpenPanel] = useState<'load' | 'library' | null>(null)
+  const [promptCopied, setPromptCopied] = useState(false)
+  const { tempoEnabled, bpm, setTempoEnabled, setBpm } = useSettings()
+  const timer = useProgressionTimer({
+    cursor,
+    totalChords: progression?.chords.length ?? 0,
+    enabled: tempoEnabled,
+  })
 
   // Refs let the settle queue's evaluator read the latest target/cursor
   // without the queue itself being recreated on each cursor advance.
@@ -100,10 +113,11 @@ export default function App() {
     setCursor(0)
     setFlash(null)
     settle.cancel()
+    timer.reset()
     setOpenPanel(null)
   }
 
-  function togglePanel(panel: 'load' | 'library' | 'prompt') {
+  function togglePanel(panel: 'load' | 'library') {
     setOpenPanel(prev => prev === panel ? null : panel)
   }
 
@@ -123,6 +137,7 @@ export default function App() {
     setCursor(0)
     setFlash(null)
     settle.cancel()
+    timer.reset()
   }
 
   function handleReset() {
@@ -130,9 +145,17 @@ export default function App() {
     setCursor(0)
     setFlash(null)
     settle.cancel()
+    timer.reset()
   }
 
   const isComplete = progression !== null && cursor >= progression.chords.length
+
+  let timerResult: string | null = null
+  if (isComplete && tempoEnabled && timer.startMs !== null && timer.endMs !== null && progression) {
+    const actualMs = timer.endMs - timer.startMs
+    const expectedMs = computeExpectedMs(progression.chords.length, bpm)
+    timerResult = `Expected ${formatDuration(expectedMs)} · Actual ${formatDuration(actualMs)}  ${formatDelta(actualMs, expectedMs)}`
+  }
 
   return (
     <div className="app">
@@ -154,6 +177,7 @@ export default function App() {
               onChordClick={(i) => { setCursor(i); setFlash(null); settle.cancel() }}
             />
             {isComplete && <p className="done-indicator">Done!</p>}
+            {timerResult && <p className="timer-result">{timerResult}</p>}
           </>
         ) : (
           <p className="empty-state">Load a progression to start practicing.</p>
@@ -163,19 +187,16 @@ export default function App() {
       <div className="app-bottom">
         {openPanel === 'load' && <LoadPanel onLoad={handleLoad} />}
         {openPanel === 'library' && <LibraryPanel current={progression} onLoad={handleLoad} />}
-        {openPanel === 'prompt' && (
-          <section className="panel prompt-panel">
-            <h2>Claude prompt</h2>
-            <p className="prompt-instructions">Fill in the parameters and paste into Claude, then load the JSON output.</p>
-            <textarea readOnly rows={20} value={CLAUDE_PROMPT} />
-          </section>
-        )}
         <div className="bottom-bar">
           <ControlsStrip
             onRestart={handleRestart}
             onReset={handleReset}
             canRestart={true}
             canReset={true}
+            tempoEnabled={tempoEnabled}
+            bpm={bpm}
+            onTempoEnabledChange={setTempoEnabled}
+            onBpmChange={setBpm}
           />
           <div className="panel-toggles">
             <button
@@ -191,10 +212,14 @@ export default function App() {
               Library
             </button>
             <button
-              className={`toggle-btn${openPanel === 'prompt' ? ' toggle-btn--active' : ''}`}
-              onClick={() => togglePanel('prompt')}
+              className="toggle-btn"
+              onClick={() => {
+                navigator.clipboard.writeText(CLAUDE_PROMPT)
+                setPromptCopied(true)
+                setTimeout(() => setPromptCopied(false), 2000)
+              }}
             >
-              Prompt
+              {promptCopied ? 'Copied!' : 'Prompt'}
             </button>
           </div>
         </div>
