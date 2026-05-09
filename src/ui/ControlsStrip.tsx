@@ -3,10 +3,10 @@ export interface ControlsStripProps {
   onReset: () => void
   canRestart: boolean
   canReset: boolean
-  tempoEnabled: boolean
-  bpm: number
-  onTempoEnabledChange: (v: boolean) => void
-  onBpmChange: (v: number) => void
+  tempoEnabled?: boolean
+  bpm?: number
+  onTempoEnabledChange?: (v: boolean) => void
+  onBpmChange?: (v: number) => void
 }
 
 export function ControlsStrip({
@@ -14,10 +14,10 @@ export function ControlsStrip({
   onReset,
   canRestart,
   canReset,
-  tempoEnabled,
-  bpm,
-  onTempoEnabledChange,
-  onBpmChange,
+  tempoEnabled = true,
+  bpm = 40,
+  onTempoEnabledChange = () => {},
+  onBpmChange = () => {},
 }: ControlsStripProps) {
   function handleBpmChange(e: React.ChangeEvent<HTMLInputElement>) {
     const v = parseInt(e.target.value, 10)
