@@ -15,7 +15,7 @@ import { computeExpectedMs } from './timing/expected'
 import { formatDuration, formatDelta } from './timing/format'
 
 const FLASH_DURATION_MS = 500
-const SETTLE_WINDOW_MS = 50
+const SETTLE_WINDOW_MS = 100
 
 const CLAUDE_PROMPT = [
   'Generate a piano chord progression as JSON for my practice app.',
