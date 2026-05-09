@@ -77,4 +77,14 @@ describe('validateProgression', () => {
     expect(result.ok).toBe(false)
     if (!result.ok) expect(typeof result.error).toBe('string')
   })
+
+  it('rejects chords field that is not an array', () => {
+    const result = validateProgression({ chords: 5 })
+    expect(result.ok).toBe(false)
+  })
+
+  it('rejects a name that is not a string', () => {
+    const result = validateProgression({ name: 42, chords: [{ symbol: 'C', pitchClasses: [0, 4, 7], bass: 0 }] })
+    expect(result.ok).toBe(false)
+  })
 })

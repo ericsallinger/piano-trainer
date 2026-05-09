@@ -21,8 +21,8 @@ function validateChord(input: unknown, index: number): ChordSpec | string {
   if (typeof c.symbol !== 'string' || c.symbol.length === 0) {
     return `chords[${index}].symbol must be a non-empty string`
   }
-  if (!Array.isArray(c.pitchClasses) || c.pitchClasses.length === 0 || c.pitchClasses.length > 12) {
-    return `chords[${index}].pitchClasses must be an array of 1-12 items`
+  if (!Array.isArray(c.pitchClasses) || c.pitchClasses.length === 0) {
+    return `chords[${index}].pitchClasses must be a non-empty array`
   }
   for (const pc of c.pitchClasses) {
     if (!isPitchClass(pc)) {
