@@ -167,3 +167,16 @@ body {
   gap: 8px;
   margin-top: 16px;
 }
+
+.empty-state {
+  color: #666;
+  font-style: italic;
+  margin: 24px 0;
+}
+
+.done-indicator {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2a2;
+  margin: 16px 0;
+}
