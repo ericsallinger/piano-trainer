@@ -10,9 +10,10 @@ export interface ProgressionDisplayProps {
   progression: Progression
   cursor: number
   flash: FlashEvent | null
+  onChordClick?: (index: number) => void
 }
 
-export function ProgressionDisplay({ progression, cursor, flash }: ProgressionDisplayProps) {
+export function ProgressionDisplay({ progression, cursor, flash, onChordClick }: ProgressionDisplayProps) {
   return (
     <div className="progression">
       {progression.chords.map((chord, i) => {
@@ -28,6 +29,7 @@ export function ProgressionDisplay({ progression, cursor, flash }: ProgressionDi
             symbol={chord.symbol}
             state={state}
             flash={flashColor}
+            onClick={onChordClick ? () => onChordClick(i) : undefined}
           />
         )
       })}
