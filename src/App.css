@@ -126,3 +126,44 @@ body {
   font-style: italic;
   margin: 8px 0 0;
 }
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 12px;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.midi-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #888;
+  display: inline-block;
+}
+
+.status-connected { background: #2c2; }
+.status-denied { background: #c33; }
+.status-disconnected { background: #888; }
+.status-pending { background: #fa0; }
+
+.controls-strip {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
