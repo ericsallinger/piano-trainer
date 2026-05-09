@@ -36,18 +36,21 @@ export function ControlsStrip({
         >
           {tempoEnabled ? 'Tempo: ON' : 'Tempo: OFF'}
         </button>
-        <label htmlFor="bpm-input">BPM</label>
-        <input
-          id="bpm-input"
-          type="number"
-          className="bpm-input"
-          min={20}
-          max={300}
-          step={1}
-          value={bpm}
-          disabled={!tempoEnabled}
-          onChange={handleBpmChange}
-        />
+        {tempoEnabled && (
+          <>
+            <label htmlFor="bpm-input">BPM</label>
+            <input
+              id="bpm-input"
+              type="number"
+              className="bpm-input"
+              min={20}
+              max={300}
+              step={1}
+              value={bpm}
+              onChange={handleBpmChange}
+            />
+          </>
+        )}
       </div>
     </div>
   )

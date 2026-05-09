@@ -63,9 +63,9 @@ describe('ControlsStrip', () => {
     expect(screen.getByRole('spinbutton')).toHaveValue(60)
   })
 
-  it('BPM input is disabled when tempoEnabled is false', () => {
+  it('BPM input is not shown when tempoEnabled is false', () => {
     render(<ControlsStrip {...baseProps} tempoEnabled={false} />)
-    expect(screen.getByRole('spinbutton')).toBeDisabled()
+    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
   })
 
   it('calls onBpmChange with parsed integer on valid input', () => {
