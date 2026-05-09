@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatDuration, formatDelta } from './format'
+import { formatDuration, formatDelta, formatDeltaSummary } from './format'
 
 describe('formatDuration', () => {
   it('formats 0ms as "0:00"', () => {
@@ -40,5 +40,26 @@ describe('formatDelta', () => {
   })
   it('returns delta without percent when expectedMs is 0', () => {
     expect(formatDelta(1000, 0)).toBe('(+1.0s)')
+  })
+})
+
+describe('formatDeltaSummary', () => {
+  it('returns "9% slow" when 3s over a 32s expected', () => {
+    expect(formatDeltaSummary(35000, 32000)).toBe('9% slow')
+  })
+  it('returns "5% fast" when 1.5s under a 32s expected', () => {
+    expect(formatDeltaSummary(30500, 32000)).toBe('5% fast')
+  })
+  it('returns "on time" when actual equals expected', () => {
+    expect(formatDeltaSummary(32000, 32000)).toBe('on time')
+  })
+  it('returns "on time" within 50ms threshold', () => {
+    expect(formatDeltaSummary(32030, 32000)).toBe('on time')
+  })
+  it('returns "on time" for 0 vs 0', () => {
+    expect(formatDeltaSummary(0, 0)).toBe('on time')
+  })
+  it('returns seconds delta without percent when expectedMs is 0', () => {
+    expect(formatDeltaSummary(1000, 0)).toBe('+1.0s')
   })
 })

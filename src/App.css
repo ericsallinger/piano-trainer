@@ -241,7 +241,18 @@ body {
 }
 
 .timer-result {
-  font-size: 14px;
-  color: #666;
   margin-top: -8px;
+}
+
+.timer-summary {
+  font-size: 22px;
+  font-weight: 600;
+  color: #444;
+  margin: 0 0 4px;
+}
+
+.timer-detail {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
 }

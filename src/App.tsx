@@ -12,7 +12,7 @@ import { ControlsStrip } from './ui/ControlsStrip'
 import { useSettings } from './settings/useSettings'
 import { useProgressionTimer } from './timing/useProgressionTimer'
 import { computeExpectedMs } from './timing/expected'
-import { formatDuration, formatDelta } from './timing/format'
+import { formatDuration, formatDelta, formatDeltaSummary } from './timing/format'
 
 const FLASH_DURATION_MS = 500
 const SETTLE_WINDOW_MS = 100
@@ -150,11 +150,13 @@ export default function App() {
 
   const isComplete = progression !== null && cursor >= progression.chords.length
 
-  let timerResult: string | null = null
+  let timerSummary: string | null = null
+  let timerDetail: string | null = null
   if (isComplete && tempoEnabled && timer.startMs !== null && timer.endMs !== null && progression) {
     const actualMs = timer.endMs - timer.startMs
     const expectedMs = computeExpectedMs(progression.chords.length, bpm)
-    timerResult = `Expected ${formatDuration(expectedMs)} · Actual ${formatDuration(actualMs)}  ${formatDelta(actualMs, expectedMs)}`
+    timerSummary = formatDeltaSummary(actualMs, expectedMs)
+    timerDetail = `Expected ${formatDuration(expectedMs)} · Actual ${formatDuration(actualMs)}  ${formatDelta(actualMs, expectedMs)}`
   }
 
   return (
@@ -177,7 +179,12 @@ export default function App() {
               onChordClick={(i) => { setCursor(i); setFlash(null); settle.cancel(); timer.reset() }}
             />
             {isComplete && <p className="done-indicator">Done!</p>}
-            {timerResult && <p className="timer-result">{timerResult}</p>}
+            {timerSummary && (
+              <div className="timer-result">
+                <p className="timer-summary">{timerSummary}</p>
+                <p className="timer-detail">{timerDetail}</p>
+              </div>
+            )}
           </>
         ) : (
           <p className="empty-state">Load a progression to start practicing.</p>
