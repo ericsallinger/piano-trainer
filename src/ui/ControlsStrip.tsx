@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 export interface ControlsStripProps {
   onRestart: () => void
   onReset: () => void
@@ -19,10 +21,18 @@ export function ControlsStrip({
   onTempoEnabledChange,
   onBpmChange,
 }: ControlsStripProps) {
+  const [inputValue, setInputValue] = useState(String(bpm))
+
   function handleBpmChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const v = parseInt(e.target.value, 10)
+    const raw = e.target.value
+    setInputValue(raw)
+    const v = parseInt(raw, 10)
     if (Number.isNaN(v)) return
     onBpmChange(Math.min(300, Math.max(20, v)))
+  }
+
+  function handleBpmBlur() {
+    setInputValue(String(bpm))
   }
 
   return (
@@ -46,8 +56,9 @@ export function ControlsStrip({
               min={20}
               max={300}
               step={1}
-              value={bpm}
+              value={inputValue}
               onChange={handleBpmChange}
+              onBlur={handleBpmBlur}
             />
           </>
         )}

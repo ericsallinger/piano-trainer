@@ -82,6 +82,12 @@ describe('ControlsStrip', () => {
     expect(onBpmChange).not.toHaveBeenCalled()
   })
 
+  it('allows the input to be cleared without snapping back to the prop value', () => {
+    render(<ControlsStrip {...baseProps} bpm={40} onBpmChange={vi.fn()} />)
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '' } })
+    expect(screen.getByRole('spinbutton')).toHaveValue(null)
+  })
+
   it('clamps low values to 20', () => {
     const onBpmChange = vi.fn()
     render(<ControlsStrip {...baseProps} onBpmChange={onBpmChange} />)
