@@ -12,7 +12,7 @@ import { ControlsStrip } from './ui/ControlsStrip'
 import { useSettings } from './settings/useSettings'
 import { useProgressionTimer } from './timing/useProgressionTimer'
 import { computeExpectedMs } from './timing/expected'
-import { formatDuration, formatDelta, formatDeltaSummary } from './timing/format'
+import { formatDuration, formatDeltaSummary } from './timing/format'
 
 const FLASH_DURATION_MS = 500
 const SETTLE_WINDOW_MS = 100
@@ -156,7 +156,7 @@ export default function App() {
     const actualMs = timer.endMs - timer.startMs
     const expectedMs = computeExpectedMs(progression.chords.length, bpm)
     timerSummary = formatDeltaSummary(actualMs, expectedMs)
-    timerDetail = `Expected ${formatDuration(expectedMs)} · Actual ${formatDuration(actualMs)}  ${formatDelta(actualMs, expectedMs)}`
+    timerDetail = `Expected ${formatDuration(expectedMs)} · Actual ${formatDuration(actualMs)}`
   }
 
   return (
