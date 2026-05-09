@@ -38,44 +38,6 @@ npm run test:watch
 - No foreign notes — playing any pitch class not in the chord fails the match.
 - The lowest note must match the chord's specified bass (which encodes the inversion).
 
-## Claude prompt for generating progressions
-
-Copy this into Claude, fill in the parameters, and paste the JSON output into the app.
-
-```
-Generate a piano chord progression as JSON for my practice app.
-
-Parameters:
-- Key: <e.g. C major>
-- Length: <e.g. 8 chords>
-- Style/notes: <e.g. "jazz ii-V-Is, lots of first-inversion 7th chords">
-
-Output a single JSON object with this exact schema (no prose, no markdown
-fences, just the JSON):
-
-{
-  "name": "<short descriptive name>",
-  "chords": [
-    { "symbol": "<chord symbol>", "pitchClasses": [<ints 0-11>], "bass": <int 0-11> }
-  ]
-}
-
-Conventions:
-- pitchClasses uses C=0, C#=1, D=2, ..., B=11. Order within the array doesn't matter.
-- bass MUST be one of the values in pitchClasses, and represents the lowest
-  pitch class (used to encode inversion).
-- For root position chords, bass equals the root's pitch class.
-- For inversions, write the symbol with slash notation, e.g. "Cmaj7/E", and set
-  bass accordingly.
-- Make sure pitchClasses accurately matches the symbol — if you write "Cmaj7"
-  the array must contain {0, 4, 7, 11}.
-
-Example:
-{ "symbol": "G7/B", "pitchClasses": [7, 11, 2, 5], "bass": 11 }
-
-Now generate the progression for the parameters above.
-```
-
 ## Manual integration test checklist
 
 After making any change to MIDI handling or the matching wiring, run through this with a real MIDI controller:
@@ -101,6 +63,12 @@ After making any change to MIDI handling or the matching wiring, run through thi
 9. Disconnect the MIDI cable mid-practice. Header should switch to "No MIDI device". Reconnect — header returns to "Connected: ...". Cursor is preserved.
 10. Click Reset → progression unloads, empty-state message appears.
 11. Save the test progression to the library, refresh the page, confirm it reappears in the Library panel and loads correctly.
+12. With Tempo ON and BPM = 60, load the 3-chord test progression. Play through it. After "Done!" appears, verify a result line shows `Expected 0:08 · Actual <your time> (delta)`. (8 s = (3 − 1) × 4 × 1.0 s.)
+13. Click Restart, change BPM to 120, play through again. Verify the expected time updates to `0:04`.
+14. Toggle Tempo OFF. Click Restart, play through. Verify only "Done!" appears — no result line.
+15. Toggle Tempo ON, play the first chord correctly, then toggle Tempo OFF mid-progression. Finish playing. Verify no result line appears (since `endMs` was never captured).
+16. Refresh the page. Verify the BPM value and Tempo toggle state are preserved from before the refresh.
+17. With Tempo ON, clear the BPM input and type `0`, then `9999`. Verify the input clamps to 20 and 300 respectively and the app does not crash.
 
 ## Troubleshooting
 
