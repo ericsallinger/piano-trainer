@@ -6,7 +6,7 @@ TODO::
 
 # Piano Trainer
 
-A browser-based webapp for practicing piano chords with live MIDI input. Display a progression, play each chord on a connected MIDI controller, and the app advances when you play it correctly (with the right inversion).
+A browser-based webapp for practicing piano chords with live MIDI input. Display a progression, play each chord on a connected MIDI controller, and the app advances when you play it correctly (with the right inversion). 
 
 See `docs/superpowers/specs/2026-05-09-piano-trainer-design.md` for the full design.
 
