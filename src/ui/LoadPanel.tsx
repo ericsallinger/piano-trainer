@@ -29,7 +29,7 @@ export function LoadPanel({ onLoad }: LoadPanelProps) {
 
   return (
     <section className="panel load-panel">
-      <h2>Load progression</h2>
+      <h2>Add progression</h2>
       <textarea
         rows={8}
         value={text}
@@ -37,7 +37,7 @@ export function LoadPanel({ onLoad }: LoadPanelProps) {
         placeholder='{"name":"...","chords":[{"symbol":"C","pitchClasses":[0,4,7],"bass":0}]}'
       />
       <div className="panel-controls">
-        <button onClick={handleLoad}>Load</button>
+        <button onClick={handleLoad}>Add</button>
       </div>
       {error && <div role="alert" className="error">{error}</div>}
     </section>

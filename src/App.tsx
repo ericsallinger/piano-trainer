@@ -74,6 +74,12 @@ export default function App() {
   // user has had a chance to release.
   const targetRef = useRef<ChordSpec | null>(null)
   const cursorRef = useRef(0)
+  // Tracks the noteon count at the time of the last successful match.
+  // Releases (noteoffs) still push the shrinking held set through the settle
+  // window, which would otherwise produce a spurious red flash on the next
+  // chord. Gating on a fresh noteon since the last match suppresses that.
+  const lastMatchedNoteOnCountRef = useRef(0)
+  const getNoteOnCount = midi.getNoteOnCount
 
   const target = progression && cursor < progression.chords.length
     ? progression.chords[cursor]
@@ -87,10 +93,13 @@ export default function App() {
     return createSettleQueue(SETTLE_WINDOW_MS, (held) => {
       const t = targetRef.current
       if (!t || held.size === 0) return
+      const noteOnCount = getNoteOnCount()
+      if (noteOnCount === lastMatchedNoteOnCountRef.current) return
       const c = cursorRef.current
 
       if (flashTimerRef.current) clearTimeout(flashTimerRef.current)
       if (matchesChord(held, t)) {
+        lastMatchedNoteOnCountRef.current = noteOnCount
         setFlash({ color: 'green', onIndex: c })
         flashTimerRef.current = setTimeout(() => setFlash(null), FLASH_DURATION_MS)
         setCursor((cur) => cur + 1)
@@ -210,7 +219,7 @@ export default function App() {
               className={`toggle-btn${openPanel === 'load' ? ' toggle-btn--active' : ''}`}
               onClick={() => togglePanel('load')}
             >
-              Load
+              Add
             </button>
             <button
               className={`toggle-btn${openPanel === 'library' ? ' toggle-btn--active' : ''}`}

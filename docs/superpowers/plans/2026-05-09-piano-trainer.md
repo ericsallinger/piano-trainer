@@ -1216,7 +1216,7 @@ export function LoadPanel({ onLoad }: LoadPanelProps) {
 
   return (
     <section className="panel load-panel">
-      <h2>Load progression</h2>
+        <h2>Add progression</h2>
       <textarea
         rows={8}
         value={text}

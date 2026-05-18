@@ -10,6 +10,9 @@ export interface UseMidiInputResult {
   selectedDeviceName: string | null
   selectDevice: (id: string) => void
   heldNotes: ReadonlySet<number>
+  /** Monotonic count of noteon events with attack > 0. Use to detect a fresh
+   *  keypress vs. a release: noteoffs and velocity-0 noteons do not increment. */
+  getNoteOnCount: () => number
 }
 
 export function useMidiInput(): UseMidiInputResult {
@@ -18,6 +21,8 @@ export function useMidiInput(): UseMidiInputResult {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null)
   const [heldNotes, setHeldNotes] = useState<ReadonlySet<number>>(new Set())
   const heldRef = useRef<Set<number>>(new Set())
+  const noteOnCountRef = useRef(0)
+  const getNoteOnCount = useCallback(() => noteOnCountRef.current, [])
 
   const updateHeld = useCallback((mutator: (s: Set<number>) => void) => {
     mutator(heldRef.current)
@@ -70,6 +75,7 @@ export function useMidiInput(): UseMidiInputResult {
       if (e.note.attack === 0) {
         updateHeld((s) => s.delete(e.note.number))
       } else {
+        noteOnCountRef.current += 1
         updateHeld((s) => s.add(e.note.number))
       }
     }
@@ -104,5 +110,6 @@ export function useMidiInput(): UseMidiInputResult {
     selectedDeviceName,
     selectDevice,
     heldNotes,
+    getNoteOnCount,
   }
 }

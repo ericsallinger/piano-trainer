@@ -1,3 +1,9 @@
+TODO::
+[] add 2 hand mode that requires both hands to play the chord correctly and full
+[] add multiple prompts - formatting json from screenshot and from guitartabs text
+[] looping mode
+[] make each cord right-clickable to allow selecting duration of chord from 16th to whole note and reflect that selection in the display. allow for saving the tempo as well in the json
+
 # Piano Trainer
 
 A browser-based webapp for practicing piano chords with live MIDI input. Display a progression, play each chord on a connected MIDI controller, and the app advances when you play it correctly (with the right inversion).
