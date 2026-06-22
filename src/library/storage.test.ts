@@ -4,6 +4,8 @@ import {
   loadProgression,
   listProgressions,
   deleteProgression,
+  loadStats,
+  recordCompletion,
 } from './storage'
 import type { Progression } from '../progression/types'
 
@@ -55,6 +57,35 @@ describe('library storage', () => {
   it('rejects an empty name', () => {
     const r = saveProgression('', example)
     expect(r.ok).toBe(false)
+  })
+
+  it('returns zero stats for an unknown name', () => {
+    expect(loadStats('Nope')).toEqual({ completions: 0, bestBpm: null })
+  })
+
+  it('records completions and tracks the highest BPM', () => {
+    recordCompletion('Alpha', 60)
+    recordCompletion('Alpha', 80)
+    recordCompletion('Alpha', 70)
+    expect(loadStats('Alpha')).toEqual({ completions: 3, bestBpm: 80 })
+  })
+
+  it('counts completions with a null BPM (tempo disabled) without changing bestBpm', () => {
+    recordCompletion('Alpha', 60)
+    recordCompletion('Alpha', null)
+    expect(loadStats('Alpha')).toEqual({ completions: 2, bestBpm: 60 })
+  })
+
+  it('starts bestBpm at null when first completion has a null BPM', () => {
+    recordCompletion('Alpha', null)
+    expect(loadStats('Alpha')).toEqual({ completions: 1, bestBpm: null })
+  })
+
+  it('clears stats when a progression is deleted', () => {
+    saveProgression('Alpha', example)
+    recordCompletion('Alpha', 90)
+    deleteProgression('Alpha')
+    expect(loadStats('Alpha')).toEqual({ completions: 0, bestBpm: null })
   })
 
   it('returns an error result if localStorage throws (quota exceeded)', () => {

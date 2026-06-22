@@ -7,58 +7,26 @@ import { useMidiInput } from './midi/useMidiInput'
 import { Header } from './ui/Header'
 import { LoadPanel } from './ui/LoadPanel'
 import { LibraryPanel } from './ui/LibraryPanel'
+import { PromptPanel } from './ui/PromptPanel'
 import { ProgressionDisplay, type FlashEvent } from './ui/ProgressionDisplay'
 import { ControlsStrip } from './ui/ControlsStrip'
 import { useSettings } from './settings/useSettings'
 import { useProgressionTimer } from './timing/useProgressionTimer'
 import { computeExpectedMs } from './timing/expected'
 import { formatDuration, formatDeltaSummary } from './timing/format'
+import { recordCompletion } from './library/storage'
 
 const FLASH_DURATION_MS = 500
 const SETTLE_WINDOW_MS = 100
 
-const CLAUDE_PROMPT = [
-  'Generate a piano chord progression as JSON for my practice app.',
-  ' ',
-  'Parameters:',
-  '- Style/notes: ',
-  '- Length: ',
-  '- Key: ',
-  '-------------------',
-  'Output a single JSON object with this exact schema (no prose, no markdown',
-  'fences, just the JSON):',
-  ' ',
-  '{',
-  '  "name": "<short descriptive name>",',
-  '  "chords": [',
-  '    { "symbol": "<chord symbol>", "pitchClasses": [<ints 0-11>], "bass": <int 0-11> }',
-  '  ]',
-  '}',
-  ' ',
-  'Conventions:',
-  "- pitchClasses uses C=0, C#=1, D=2, ..., B=11. Order within the array doesn't matter.",
-  '- bass MUST be one of the values in pitchClasses, and represents the lowest',
-  '  pitch class (used to encode inversion).',
-  "- For root position chords, bass equals the root's pitch class.",
-  '- For inversions, write the symbol with slash notation, e.g. "Cmaj7/E", and set',
-  '  bass accordingly.',
-  '- Make sure pitchClasses accurately matches the symbol — if you write "Cmaj7"',
-  '  the array must contain {0, 4, 7, 11}.',
-  ' ',
-  'Example:',
-  '{ "symbol": "G7/B", "pitchClasses": [7, 11, 2, 5], "bass": 11 }',
-  ' ',
-  'Now generate the progression for the parameters above.',
-].join('\n')
-
 export default function App() {
   const midi = useMidiInput()
   const [progression, setProgression] = useState<Progression | null>(null)
+  const [currentName, setCurrentName] = useState<string | null>(null)
   const [cursor, setCursor] = useState(0)
   const [flash, setFlash] = useState<FlashEvent | null>(null)
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [openPanel, setOpenPanel] = useState<'load' | 'library' | null>(null)
-  const [promptCopied, setPromptCopied] = useState(false)
+  const [openPanel, setOpenPanel] = useState<'load' | 'library' | 'prompt' | null>(null)
   const { tempoEnabled, bpm, setTempoEnabled, setBpm } = useSettings()
   const timer = useProgressionTimer({
     cursor,
@@ -117,8 +85,9 @@ export default function App() {
     settle.push(midi.heldNotes)
   }, [midi.heldNotes, settle])
 
-  function handleLoad(p: Progression) {
+  function handleLoad(p: Progression, name: string | null = null) {
     setProgression(p)
+    setCurrentName(name)
     setCursor(0)
     setFlash(null)
     settle.cancel()
@@ -126,7 +95,7 @@ export default function App() {
     setOpenPanel(null)
   }
 
-  function togglePanel(panel: 'load' | 'library') {
+  function togglePanel(panel: 'load' | 'library' | 'prompt') {
     setOpenPanel(prev => prev === panel ? null : panel)
   }
 
@@ -151,6 +120,21 @@ export default function App() {
 
   function handleReset() {
     setProgression(null)
+    setCurrentName(null)
+    setCursor(0)
+    setFlash(null)
+    settle.cancel()
+    timer.reset()
+  }
+
+  function handleShuffle() {
+    if (!progression || progression.chords.length < 2) return
+    const shuffled = [...progression.chords]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    setProgression({ ...progression, chords: shuffled })
     setCursor(0)
     setFlash(null)
     settle.cancel()
@@ -158,6 +142,20 @@ export default function App() {
   }
 
   const isComplete = progression !== null && cursor >= progression.chords.length
+
+  const currentNameRef = useRef<string | null>(null)
+  const tempoEnabledRef = useRef(tempoEnabled)
+  const bpmRef = useRef(bpm)
+  useEffect(() => { currentNameRef.current = currentName }, [currentName])
+  useEffect(() => { tempoEnabledRef.current = tempoEnabled }, [tempoEnabled])
+  useEffect(() => { bpmRef.current = bpm }, [bpm])
+
+  useEffect(() => {
+    if (!isComplete) return
+    const name = currentNameRef.current
+    if (!name) return
+    recordCompletion(name, tempoEnabledRef.current ? bpmRef.current : null)
+  }, [isComplete])
 
   let timerSummary: string | null = null
   let timerDetail: string | null = null
@@ -202,13 +200,22 @@ export default function App() {
 
       <div className="app-bottom">
         {openPanel === 'load' && <LoadPanel onLoad={handleLoad} />}
-        {openPanel === 'library' && <LibraryPanel current={progression} onLoad={handleLoad} />}
+        {openPanel === 'library' && (
+          <LibraryPanel
+            current={progression}
+            onLoad={handleLoad}
+            onSaved={(name) => setCurrentName(name)}
+          />
+        )}
+        {openPanel === 'prompt' && <PromptPanel />}
         <div className="bottom-bar">
           <ControlsStrip
             onRestart={handleRestart}
             onReset={handleReset}
+            onShuffle={handleShuffle}
             canRestart={true}
             canReset={true}
+            canShuffle={progression !== null && progression.chords.length > 1}
             tempoEnabled={tempoEnabled}
             bpm={bpm}
             onTempoEnabledChange={setTempoEnabled}
@@ -228,14 +235,10 @@ export default function App() {
               Library
             </button>
             <button
-              className="toggle-btn"
-              onClick={() => {
-                navigator.clipboard.writeText(CLAUDE_PROMPT)
-                setPromptCopied(true)
-                setTimeout(() => setPromptCopied(false), 2000)
-              }}
+              className={`toggle-btn${openPanel === 'prompt' ? ' toggle-btn--active' : ''}`}
+              onClick={() => togglePanel('prompt')}
             >
-              {promptCopied ? 'Copied!' : 'Prompt'}
+              Prompt
             </button>
           </div>
         </div>

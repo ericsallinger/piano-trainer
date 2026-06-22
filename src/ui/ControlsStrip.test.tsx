@@ -5,8 +5,10 @@ import { ControlsStrip } from './ControlsStrip'
 const baseProps = {
   onRestart: vi.fn(),
   onReset: vi.fn(),
+  onShuffle: vi.fn(),
   canRestart: true,
   canReset: true,
+  canShuffle: true,
   tempoEnabled: true,
   bpm: 40,
   onTempoEnabledChange: vi.fn(),

@@ -30,7 +30,7 @@ describe('<LibraryPanel>', () => {
     const onLoad = vi.fn()
     render(<LibraryPanel current={null} onLoad={onLoad} />)
     await user.click(screen.getByRole('button', { name: /load alpha/i }))
-    expect(onLoad).toHaveBeenCalledWith(example)
+    expect(onLoad).toHaveBeenCalledWith(example, 'Alpha')
   })
 
   it('removes a progression when Delete is clicked', async () => {

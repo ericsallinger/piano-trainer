@@ -5,20 +5,28 @@ import {
   loadProgression,
   listProgressions,
   deleteProgression,
+  loadStats,
+  type ProgressionStats,
 } from '../library/storage'
 
 export interface LibraryPanelProps {
   current: Progression | null
-  onLoad: (progression: Progression) => void
+  onLoad: (progression: Progression, name: string) => void
+  onSaved?: (name: string) => void
 }
 
-export function LibraryPanel({ current, onLoad }: LibraryPanelProps) {
-  const [names, setNames] = useState<string[]>([])
+interface LibraryEntry {
+  name: string
+  stats: ProgressionStats
+}
+
+export function LibraryPanel({ current, onLoad, onSaved }: LibraryPanelProps) {
+  const [entries, setEntries] = useState<LibraryEntry[]>([])
   const [saveName, setSaveName] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   const refresh = useCallback(() => {
-    setNames(listProgressions())
+    setEntries(listProgressions().map((name) => ({ name, stats: loadStats(name) })))
   }, [])
 
   useEffect(() => {
@@ -27,7 +35,7 @@ export function LibraryPanel({ current, onLoad }: LibraryPanelProps) {
 
   function handleLoad(name: string) {
     const p = loadProgression(name)
-    if (p) onLoad(p)
+    if (p) onLoad(p, name)
   }
 
   function handleDelete(name: string) {
@@ -43,7 +51,7 @@ export function LibraryPanel({ current, onLoad }: LibraryPanelProps) {
       setError('Name cannot be empty')
       return
     }
-    if (names.includes(trimmed)) {
+    if (entries.some((e) => e.name === trimmed)) {
       if (!window.confirm(`Overwrite existing "${trimmed}"?`)) return
     }
     const result = saveProgression(trimmed, current)
@@ -53,6 +61,13 @@ export function LibraryPanel({ current, onLoad }: LibraryPanelProps) {
     }
     setError(null)
     refresh()
+    onSaved?.(trimmed)
+  }
+
+  function formatStats(stats: ProgressionStats): string {
+    const completions = `${stats.completions}×`
+    const best = stats.bestBpm !== null ? ` · best ${stats.bestBpm} BPM` : ''
+    return completions + best
   }
 
   return (
@@ -71,13 +86,14 @@ export function LibraryPanel({ current, onLoad }: LibraryPanelProps) {
         </div>
       )}
 
-      {names.length === 0 ? (
+      {entries.length === 0 ? (
         <p className="library-empty">No saved progressions yet.</p>
       ) : (
         <ul className="library-list">
-          {names.map((name) => (
+          {entries.map(({ name, stats }) => (
             <li key={name}>
               <span className="library-name">{name}</span>
+              <span className="library-stats">{formatStats(stats)}</span>
               <button aria-label={`Load ${name}`} onClick={() => handleLoad(name)}>
                 Load
               </button>

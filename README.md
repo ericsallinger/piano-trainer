@@ -3,6 +3,8 @@ TODO::
 [] add multiple prompts - formatting json from screenshot and from guitartabs text
 [] looping mode
 [] make each cord right-clickable to allow selecting duration of chord from 16th to whole note and reflect that selection in the display. allow for saving the tempo as well in the json
+[] make min and maj 7 chords display as min7 and maj7 rather than min7 and maj7
+
 
 # Piano Trainer
 

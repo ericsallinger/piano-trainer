@@ -1,0 +1,73 @@
+export interface PromptTemplate {
+  label: string
+  text: string
+}
+
+const FROM_DESCRIPTION = [
+  'Generate a piano chord progression as JSON for my practice app.',
+  ' ',
+  'The the progression should contain',
+  ' ',
+  '-------------------',
+  'Output a single JSON object with this exact schema (no prose, no markdown',
+  'fences, just the JSON):',
+  ' ',
+  '{',
+  '  "name": "<short descriptive name>",',
+  '  "chords": [',
+  '    { "symbol": "<chord symbol>", "pitchClasses": [<ints 0-11>], "bass": <int 0-11> }',
+  '  ]',
+  '}',
+  ' ',
+  'Conventions:',
+  "- pitchClasses uses C=0, C#=1, D=2, ..., B=11. Order within the array doesn't matter.",
+  '- bass MUST be one of the values in pitchClasses, and represents the lowest',
+  '  pitch class (used to encode inversion).',
+  "- For root position chords, bass equals the root's pitch class.",
+  '- For inversions, write the symbol with slash notation, e.g. "Cmaj7/E", and set',
+  '  bass accordingly.',
+  '- Make sure pitchClasses accurately matches the symbol — if you write "Cmaj7"',
+  '  the array must contain {0, 4, 7, 11}.',
+  ' ',
+  'Example:',
+  '{ "symbol": "G7/B", "pitchClasses": [7, 11, 2, 5], "bass": 11 }',
+  ' ',
+  'Now generate the progression for the parameters above.',
+].join('\n')
+
+const IMAGE_OCR = [
+  'Generate a piano chord progression as JSON for my practice app.',
+  ' ',
+  'The the progression should contain the chords detected in this image which is sheet music containing staves and chord names above the staves. Rely on written chord names rather than attempting to parse the notes on the staves, since the latter is more error-prone.',
+  ' ',
+  '-------------------',
+  'Output a single JSON object with this exact schema (no prose, no markdown',
+  'fences, just the JSON):',
+  ' ',
+  '{',
+  '  "name": "<short descriptive name>",',
+  '  "chords": [',
+  '    { "symbol": "<chord symbol>", "pitchClasses": [<ints 0-11>], "bass": <int 0-11> }',
+  '  ]',
+  '}',
+  ' ',
+  'Conventions:',
+  "- pitchClasses uses C=0, C#=1, D=2, ..., B=11. Order within the array doesn't matter.",
+  '- bass MUST be one of the values in pitchClasses, and represents the lowest',
+  '  pitch class (used to encode inversion).',
+  "- For root position chords, bass equals the root's pitch class.",
+  '- For inversions, write the symbol with slash notation, e.g. "Cmaj7/E", and set',
+  '  bass accordingly.',
+  '- Make sure pitchClasses accurately matches the symbol — if you write "Cmaj7"',
+  '  the array must contain {0, 4, 7, 11}.',
+  ' ',
+  'Example:',
+  '{ "symbol": "G7/B", "pitchClasses": [7, 11, 2, 5], "bass": 11 }',
+  ' ',
+  'Now generate the progression for the parameters above.',
+].join('\n')
+
+export const PROMPTS: PromptTemplate[] = [
+  { label: 'Description', text: FROM_DESCRIPTION },
+  { label: 'Image OCR', text: IMAGE_OCR },
+]
