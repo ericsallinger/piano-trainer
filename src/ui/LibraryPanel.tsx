@@ -27,6 +27,7 @@ export function LibraryPanel({ current, onLoad, onSaved }: LibraryPanelProps) {
   const [error, setError] = useState<string | null>(null)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [dropIndex, setDropIndex] = useState<number | null>(null)
+  const [copiedName, setCopiedName] = useState<string | null>(null)
 
   const refresh = useCallback(() => {
     setEntries(listProgressions().map((name) => ({ name, stats: loadStats(name) })))
@@ -45,6 +46,14 @@ export function LibraryPanel({ current, onLoad, onSaved }: LibraryPanelProps) {
     if (!window.confirm(`Delete "${name}"?`)) return
     deleteProgression(name)
     refresh()
+  }
+
+  function handleExport(name: string) {
+    const p = loadProgression(name)
+    if (!p) return
+    navigator.clipboard.writeText(JSON.stringify(p, null, 2))
+    setCopiedName(name)
+    setTimeout(() => setCopiedName((cur) => (cur === name ? null : cur)), 2000)
   }
 
   function handleSave() {
@@ -149,6 +158,9 @@ export function LibraryPanel({ current, onLoad, onSaved }: LibraryPanelProps) {
                 <span className="library-stats">{formatStats(stats)}</span>
                 <button aria-label={`Load ${name}`} onClick={() => handleLoad(name)}>
                   Load
+                </button>
+                <button aria-label={`Export ${name}`} onClick={() => handleExport(name)}>
+                  {copiedName === name ? 'Copied!' : 'Export'}
                 </button>
                 <button aria-label={`Delete ${name}`} onClick={() => handleDelete(name)}>
                   Delete
