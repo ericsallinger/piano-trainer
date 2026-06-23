@@ -2,6 +2,7 @@ import type { Progression } from '../progression/types'
 
 const PREFIX = 'pianoTrainer:progression:'
 const STATS_PREFIX = 'pianoTrainer:stats:'
+const ORDER_KEY = 'pianoTrainer:order'
 
 export interface ProgressionStats {
   completions: number
@@ -16,6 +17,10 @@ export function saveProgression(name: string, progression: Progression): SaveRes
   if (name.length === 0) return { ok: false, error: 'Name cannot be empty' }
   try {
     localStorage.setItem(PREFIX + name, JSON.stringify(progression))
+    const order = readOrder()
+    if (!order.includes(name)) {
+      writeOrder([...order, name])
+    }
     return { ok: true }
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'unknown error'
@@ -34,19 +39,52 @@ export function loadProgression(name: string): Progression | null {
 }
 
 export function listProgressions(): string[] {
-  const names: string[] = []
+  const present = new Set<string>()
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)
     if (key && key.startsWith(PREFIX)) {
-      names.push(key.slice(PREFIX.length))
+      present.add(key.slice(PREFIX.length))
     }
   }
-  return names.sort((a, b) => a.localeCompare(b))
+  const order = readOrder()
+  const ordered = order.filter((n) => present.has(n))
+  const unordered = [...present]
+    .filter((n) => !order.includes(n))
+    .sort((a, b) => a.localeCompare(b))
+  return [...ordered, ...unordered]
+}
+
+export function reorderProgressions(names: string[]): void {
+  writeOrder(names)
 }
 
 export function deleteProgression(name: string): void {
   localStorage.removeItem(PREFIX + name)
   localStorage.removeItem(STATS_PREFIX + name)
+  const order = readOrder()
+  if (order.includes(name)) {
+    writeOrder(order.filter((n) => n !== name))
+  }
+}
+
+function readOrder(): string[] {
+  const raw = localStorage.getItem(ORDER_KEY)
+  if (raw === null) return []
+  try {
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((n): n is string => typeof n === 'string')
+  } catch {
+    return []
+  }
+}
+
+function writeOrder(names: string[]): void {
+  try {
+    localStorage.setItem(ORDER_KEY, JSON.stringify(names))
+  } catch {
+    // best-effort; ordering is a UX nicety
+  }
 }
 
 export function loadStats(name: string): ProgressionStats {

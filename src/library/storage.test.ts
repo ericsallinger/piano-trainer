@@ -4,6 +4,7 @@ import {
   loadProgression,
   listProgressions,
   deleteProgression,
+  reorderProgressions,
   loadStats,
   recordCompletion,
 } from './storage'
@@ -29,11 +30,33 @@ describe('library storage', () => {
     expect(loadProgression('Nope')).toBeNull()
   })
 
-  it('lists saved names sorted alphabetically', () => {
+  it('lists saved names in insertion order', () => {
     saveProgression('Charlie', example)
     saveProgression('Alpha', example)
     saveProgression('Bravo', example)
-    expect(listProgressions()).toEqual(['Alpha', 'Bravo', 'Charlie'])
+    expect(listProgressions()).toEqual(['Charlie', 'Alpha', 'Bravo'])
+  })
+
+  it('reorderProgressions persists a new order', () => {
+    saveProgression('A', example)
+    saveProgression('B', example)
+    saveProgression('C', example)
+    reorderProgressions(['C', 'A', 'B'])
+    expect(listProgressions()).toEqual(['C', 'A', 'B'])
+  })
+
+  it('lists names with no stored order alphabetically (migration fallback)', () => {
+    // Simulate pre-ordering data: progressions exist but no order key.
+    localStorage.setItem('pianoTrainer:progression:Zebra', JSON.stringify(example))
+    localStorage.setItem('pianoTrainer:progression:Apple', JSON.stringify(example))
+    expect(listProgressions()).toEqual(['Apple', 'Zebra'])
+  })
+
+  it('drops deleted names from the stored order', () => {
+    saveProgression('A', example)
+    saveProgression('B', example)
+    deleteProgression('A')
+    expect(listProgressions()).toEqual(['B'])
   })
 
   it('deletes a progression', () => {

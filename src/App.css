@@ -141,6 +141,32 @@ body {
   padding: 4px 0;
 }
 
+.library-item {
+  cursor: grab;
+  border-top: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+}
+
+.library-item:active {
+  cursor: grabbing;
+}
+
+.library-item--dragging {
+  opacity: 0.4;
+}
+
+.library-item--drop-target {
+  border-top-color: #4a90e2;
+}
+
+.library-handle {
+  color: #999;
+  font-size: 14px;
+  letter-spacing: -2px;
+  user-select: none;
+  padding: 0 4px;
+}
+
 .library-name {
   flex: 1;
   font-family: ui-monospace, monospace;

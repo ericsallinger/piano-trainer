@@ -143,28 +143,35 @@ export default function App() {
 
   const isComplete = progression !== null && cursor >= progression.chords.length
 
-  const currentNameRef = useRef<string | null>(null)
-  const tempoEnabledRef = useRef(tempoEnabled)
-  const bpmRef = useRef(bpm)
-  useEffect(() => { currentNameRef.current = currentName }, [currentName])
-  useEffect(() => { tempoEnabledRef.current = tempoEnabled }, [tempoEnabled])
-  useEffect(() => { bpmRef.current = bpm }, [bpm])
-
-  useEffect(() => {
-    if (!isComplete) return
-    const name = currentNameRef.current
-    if (!name) return
-    recordCompletion(name, tempoEnabledRef.current ? bpmRef.current : null)
-  }, [isComplete])
-
   let timerSummary: string | null = null
   let timerDetail: string | null = null
+  let isSuccess = false
   if (isComplete && tempoEnabled && timer.startMs !== null && timer.endMs !== null && progression) {
     const actualMs = timer.endMs - timer.startMs
     const expectedMs = computeExpectedMs(progression.chords.length, bpm)
     timerSummary = formatDeltaSummary(actualMs, expectedMs)
     timerDetail = `Expected ${formatDuration(expectedMs)} · Actual ${formatDuration(actualMs)}`
+    isSuccess = actualMs - expectedMs <= 50
   }
+
+  const currentNameRef = useRef<string | null>(null)
+  const bpmRef = useRef(bpm)
+  const recordedRef = useRef(false)
+  useEffect(() => { currentNameRef.current = currentName }, [currentName])
+  useEffect(() => { bpmRef.current = bpm }, [bpm])
+
+  useEffect(() => {
+    if (!isComplete) {
+      recordedRef.current = false
+      return
+    }
+    if (recordedRef.current) return
+    if (!isSuccess) return
+    const name = currentNameRef.current
+    if (!name) return
+    recordCompletion(name, bpmRef.current)
+    recordedRef.current = true
+  }, [isComplete, isSuccess])
 
   return (
     <div className="app">
@@ -185,7 +192,7 @@ export default function App() {
               flash={flash}
               onChordClick={(i) => { setCursor(i); setFlash(null); settle.cancel(); timer.reset() }}
             />
-            {isComplete && <p className="done-indicator">Done!</p>}
+            {isSuccess && <p className="done-indicator">Success!</p>}
             {timerSummary && (
               <div className="timer-result">
                 <p className="timer-summary">{timerSummary}</p>
