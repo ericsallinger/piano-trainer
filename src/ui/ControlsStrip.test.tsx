@@ -4,10 +4,8 @@ import { ControlsStrip } from './ControlsStrip'
 
 const baseProps = {
   onRestart: vi.fn(),
-  onReset: vi.fn(),
   onShuffle: vi.fn(),
   canRestart: true,
-  canReset: true,
   canShuffle: true,
   tempoEnabled: true,
   bpm: 40,
@@ -16,10 +14,9 @@ const baseProps = {
 }
 
 describe('ControlsStrip', () => {
-  it('renders Restart and Reset buttons', () => {
+  it('renders Restart button', () => {
     render(<ControlsStrip {...baseProps} />)
     expect(screen.getByRole('button', { name: 'Restart' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument()
   })
 
   it('calls onRestart when Restart is clicked', () => {
@@ -27,13 +24,6 @@ describe('ControlsStrip', () => {
     render(<ControlsStrip {...baseProps} onRestart={onRestart} />)
     fireEvent.click(screen.getByRole('button', { name: 'Restart' }))
     expect(onRestart).toHaveBeenCalledOnce()
-  })
-
-  it('calls onReset when Reset is clicked', () => {
-    const onReset = vi.fn()
-    render(<ControlsStrip {...baseProps} onReset={onReset} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Reset' }))
-    expect(onReset).toHaveBeenCalledOnce()
   })
 
   it('shows "Tempo: ON" when tempoEnabled is true', () => {

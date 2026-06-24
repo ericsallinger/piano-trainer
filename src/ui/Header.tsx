@@ -21,7 +21,7 @@ export function Header({
 
   return (
     <header className="app-header">
-      <h1>Piano Trainer</h1>
+      <h1>Chord Trainer</h1>
       <div className="midi-status">
         <span className={`status-dot status-${status}`} />
         <span>{statusText}</span>

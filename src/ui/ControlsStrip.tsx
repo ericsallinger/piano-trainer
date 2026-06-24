@@ -2,10 +2,8 @@ import { useState } from 'react'
 
 export interface ControlsStripProps {
   onRestart: () => void
-  onReset: () => void
   onShuffle: () => void
   canRestart: boolean
-  canReset: boolean
   canShuffle: boolean
   tempoEnabled: boolean
   bpm: number
@@ -15,10 +13,8 @@ export interface ControlsStripProps {
 
 export function ControlsStrip({
   onRestart,
-  onReset,
   onShuffle,
   canRestart,
-  canReset,
   canShuffle,
   tempoEnabled,
   bpm,
@@ -42,7 +38,6 @@ export function ControlsStrip({
   return (
     <div className="controls-strip">
       <button onClick={onRestart} disabled={!canRestart}>Restart</button>
-      <button onClick={onReset} disabled={!canReset}>Reset</button>
       <button onClick={onShuffle} disabled={!canShuffle}>Shuffle</button>
       <div className="tempo-controls">
         <button

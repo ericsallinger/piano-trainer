@@ -118,15 +118,6 @@ export default function App() {
     timer.reset()
   }
 
-  function handleReset() {
-    setProgression(null)
-    setCurrentName(null)
-    setCursor(0)
-    setFlash(null)
-    settle.cancel()
-    timer.reset()
-  }
-
   function handleShuffle() {
     if (!progression || progression.chords.length < 2) return
     const shuffled = [...progression.chords]
@@ -218,10 +209,8 @@ export default function App() {
         <div className="bottom-bar">
           <ControlsStrip
             onRestart={handleRestart}
-            onReset={handleReset}
             onShuffle={handleShuffle}
             canRestart={true}
-            canReset={true}
             canShuffle={progression !== null && progression.chords.length > 1}
             tempoEnabled={tempoEnabled}
             bpm={bpm}

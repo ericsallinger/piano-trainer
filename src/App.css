@@ -51,7 +51,8 @@ body {
 
 .toggle-btn--active {
   border-color: currentColor;
-  background: rgba(128, 128, 128, 0.12);
+  background: currentColor;
+  color: Canvas;
 }
 
 .progression {
