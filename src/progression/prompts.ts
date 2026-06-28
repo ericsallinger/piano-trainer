@@ -67,7 +67,40 @@ const IMAGE_OCR = [
   'Now generate the progression for the parameters above.',
 ].join('\n')
 
+const SONG_LOOKUP = [
+  'Generate a piano chord progression as JSON for my practice app.',
+  ' ', ' X= ', ' ',
+  'The query is: "what is the detailed chord progression for X song". Identify the song named in place of X and return its detailed, full chord progression. Include the chords section by section (intro, verse, chorus, bridge, etc.) in order where known, using your knowledge of the song. If multiple arrangements exist, use the most recognized/standard version. Keep the chords in the song\'s original key unless the query specifies otherwise.',
+  ' ',
+  '-------------------',
+  'Output a single JSON object with this exact schema (no prose, no markdown',
+  'fences, just the JSON):',
+  ' ',
+  '{',
+  '  "name": "<song title>",',
+  '  "chords": [',
+  '    { "symbol": "<chord symbol>", "pitchClasses": [<ints 0-11>], "bass": <int 0-11> }',
+  '  ]',
+  '}',
+  ' ',
+  'Conventions:',
+  "- pitchClasses uses C=0, C#=1, D=2, ..., B=11. Order within the array doesn't matter.",
+  '- bass MUST be one of the values in pitchClasses, and represents the lowest',
+  '  pitch class (used to encode inversion).',
+  "- For root position chords, bass equals the root's pitch class.",
+  '- For inversions, write the symbol with slash notation, e.g. "Cmaj7/E", and set',
+  '  bass accordingly.',
+  '- Make sure pitchClasses accurately matches the symbol — if you write "Cmaj7"',
+  '  the array must contain {0, 4, 7, 11}.',
+  ' ',
+  'Example:',
+  '{ "symbol": "G7/B", "pitchClasses": [7, 11, 2, 5], "bass": 11 }',
+  ' ',
+  'Now generate the progression for the song named above.',
+].join('\n')
+
 export const PROMPTS: PromptTemplate[] = [
   { label: 'Description', text: FROM_DESCRIPTION },
   { label: 'Image OCR', text: IMAGE_OCR },
+  { label: 'Song lookup', text: SONG_LOOKUP },
 ]
