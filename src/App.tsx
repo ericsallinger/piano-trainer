@@ -17,7 +17,7 @@ import { formatDuration, formatDeltaSummary } from './timing/format'
 import { recordCompletion } from './library/storage'
 
 const FLASH_DURATION_MS = 500
-const SETTLE_WINDOW_MS = 100
+const SETTLE_WINDOW_MS = 50
 
 export default function App() {
   const midi = useMidiInput()
